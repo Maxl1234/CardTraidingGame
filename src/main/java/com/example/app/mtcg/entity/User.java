@@ -1,5 +1,6 @@
 package com.example.app.mtcg.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Vector;
@@ -8,18 +9,29 @@ public class User {
 
     private int id;
     private int currency = 20;
-    private String un;
-    private String pw;
+    private String username;
+    private String password;
     private String authToken;
     private Vector<Card> userCards;
     private Deck userDeck;
 
+    public User() {
 
+    }
 
-    public User(String un, String pw) {
-        String salt = BCrypt.gensalt();
-        this.un = un;
-        this.pw = BCrypt.hashpw(pw,salt);
+    public User(int id, int currency, String username, String password, String authToken, Vector<Card> userCards, Deck userDeck) {
+        this.id = id;
+        this.currency = currency;
+        this.username = username;
+        this.password = password;
+        this.authToken = authToken;
+        this.userCards = userCards;
+        this.userDeck = userDeck;
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     public int getId() {
@@ -36,6 +48,22 @@ public class User {
 
     public void setCurrency(int currency) {
         this.currency = currency;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getAuthToken() {
@@ -60,22 +88,5 @@ public class User {
 
     public void setUserDeck(Deck userDeck) {
         this.userDeck = userDeck;
-    }
-
-
-    public String getUn() {
-        return un;
-    }
-
-    public void setUn(String un) {
-        this.un = un;
-    }
-
-    public String getPw() {
-        return pw;
-    }
-
-    public void setPw(String pw) {
-        this.pw = pw;
     }
 }

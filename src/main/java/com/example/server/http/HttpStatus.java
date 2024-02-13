@@ -4,7 +4,9 @@ package com.example.server.http;
 public enum HttpStatus {
     OK(200, "OK"),
     BAD_REQUEST(400, "Bad Request"),
-    NOT_FOUND(404, "Not Found");
+    NOT_FOUND(404, "Not Found"),
+    METHOD_NOT_ALLOWED(405, "Method not allowed"),
+    CREATED(201,"Created");
 
     private final int code;
     private final String message;
