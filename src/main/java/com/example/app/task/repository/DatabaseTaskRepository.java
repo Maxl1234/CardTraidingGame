@@ -15,7 +15,7 @@ public class DatabaseTaskRepository implements TaskRepository {
     private final String FIND_ALL_SQL = "SELECT * FROM task";
     private final String SAVE_SQL = "INSERT INTO task(id, name, description, done) VALUES(?, ?, ?, ?)";
 
-    private final Database database = new Database();
+        private final Database database = new Database();
 
     @Override
     public List<Task> findAll() {
