@@ -1,25 +1,27 @@
 package com.example.app.mtcg.entity;
 
+import java.util.UUID;
+
 public class Card {
     private String name;
     private String element;
     private String type;
-    private int id;
-    private double damage;
+    private UUID id;
+    private float damage;
 
 
-    public Card(String name, String element, String type, double damage, int id) {
+    public Card(String name, String element, String type, float damage, UUID id) {
         this.name = name;
         this.element = element;
         this.type = type;
         this.damage = damage;
         this.id=id;
     }
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -47,7 +49,7 @@ public class Card {
         this.element = element;
     }
 
-    public double getDamage() {
+    public float getDamage() {
         return damage;
     }
 

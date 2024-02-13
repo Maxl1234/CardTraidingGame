@@ -3,6 +3,7 @@ package com.example.app.mtcg.db;
 import com.example.app.mtcg.entity.*;
 
 import java.sql.*;
+import java.util.UUID;
 
 
 public class DbCom {
@@ -85,6 +86,36 @@ public class DbCom {
             throwables.printStackTrace();
         }
         return auth;
+
+    }
+
+    public boolean insertCard(Card card){
+        UUID id = card.getId();
+        String name = card.getName();
+        String element = card.getElement();
+        String type = card.getType();
+        float damage = card.getDamage();
+        boolean succ = false;
+
+        String insertQuery = "INSERT INTO cards (id,name,element,type,damage) VALUES (?,?,?,?,?)";
+        try{
+            PreparedStatement stmnt = connection.prepareStatement(insertQuery);
+            stmnt.setObject(1,id);
+            stmnt.setString(2,name);
+            stmnt.setString(3,element);
+            stmnt.setString(4,type);
+            stmnt.setFloat(5,damage);
+
+            int rowsAf = stmnt.executeUpdate();
+            if(rowsAf>0){
+                System.out.println("Card insert success");
+                succ = true;
+            }
+        }
+        catch (SQLException e){
+            System.err.println("Card insert Error" + e.getSQLState());
+        }
+        return succ;
 
     }
 
