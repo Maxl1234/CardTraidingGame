@@ -23,7 +23,8 @@ public class DbCom {
 
             System.err.println("Fehler beim Verbinden zur Datenbank: " + e.getMessage());
         }
-    };
+    }
+
     public void disconectdb(){
         try {
             connection.close();
@@ -34,7 +35,60 @@ public class DbCom {
             System.err.println("Problem beim DB schließen"+ e.getMessage());
         }
     }
-    public void insertUser(User user) {
+
+    public User getUser(String searchedUser)  {
+        String username = "", password = "";
+        int id = -1, currency = -1;
+        try{
+            PreparedStatement stmnt = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
+            stmnt.setString(1,searchedUser);
+            ResultSet results = stmnt.executeQuery();
+
+            if(results==null) return null;
+
+            while (results.next()){
+                username = results.getString("username");
+                password = results.getString("password");
+                id = results.getInt("user_id");
+                currency = results.getInt("currency");
+            }
+            results.close();
+            stmnt.close();
+
+            if(!username.isEmpty() && !password.isEmpty() && currency >= 0){
+                return new User(id,currency,username,password,username+"-mtcgToken");
+            }
+        }
+        catch (SQLException e){
+            System.err.println("Fetching User failed"+e.getSQLState());
+        }
+        return null;
+    }
+    public boolean insertToken (User user){
+        boolean auth = false;
+
+        try {
+            int id = user.getId();
+            String token = user.getAuthToken();
+            PreparedStatement stmnt = connection.prepareStatement("INSERT INTO userAuth (token,user_id) VALUES (?,?)");
+            stmnt.setString(1,token);
+            stmnt.setInt(2,id);
+
+            int row = stmnt.executeUpdate();
+            if (row>0){
+                auth = true;
+            }
+            connection.close();
+            stmnt.close();
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return auth;
+
+    }
+
+    public boolean insertUser(User user) {
         String un = user.getUsername();
         String pw = user.getPassword();
         String selectQuery = "SELECT COUNT(*) FROM users WHERE username = ?";
@@ -51,7 +105,7 @@ public class DbCom {
 
             if (userCount > 0) {
                 System.err.println("Benutzername bereits vorhanden. Bitte wähle einen anderen.");
-                return; // Abbrechen, da der Benutzername bereits existiert
+                return false; // Abbrechen, da der Benutzername bereits existiert
             }
 
             // Führe die INSERT-Abfrage aus, da der Benutzername nicht existiert
@@ -65,6 +119,7 @@ public class DbCom {
                 System.out.println("Benutzer erfolgreich in die Datenbank eingefügt.");
             } else {
                 System.out.println("Benutzer konnte nicht in die Datenbank eingefügt werden.");
+                return false;
             }
 
             // Wichtig: Schließe die Prepared Statements, um Ressourcen freizugeben
@@ -73,25 +128,11 @@ public class DbCom {
         } catch (SQLException e) {
             System.err.println("User insert gescheitert. Fehlerdetails:");
             System.err.println("SQL-Statuscode: " + e.getSQLState());
+            return false;
         }
+        return true;
     }
 
-    private User getUser(String username){
-        try {
-            String getQuerry = "SELECT * FROM users";
-            PreparedStatement stmnt = connection.prepareStatement(getQuerry);
-            ResultSet rs = stmnt.executeQuery();
-            if(rs==null){
-                return null;
-            }
-        }
-        catch (SQLException e){
-            System.err.println("User get all gescheitert" + e.getMessage());
-        }
 
-        // hier muss noch über die datenbank struktur nachgedacht werden
-        return null;
-
-    }
 }
 

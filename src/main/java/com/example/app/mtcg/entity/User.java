@@ -34,6 +34,14 @@ public class User {
         this.password = password;
     }
 
+    public User(int id, int currency, String username, String password, String authToken) {
+        this.id = id;
+        this.currency = currency;
+        this.username = username;
+        this.password = password;
+        this.authToken = authToken;
+    }
+
     public int getId() {
         return id;
     }
