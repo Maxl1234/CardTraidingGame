@@ -2,6 +2,7 @@ package com.example.app.mtcg;
 
 
 import com.example.app.mtcg.controller.CardController;
+import com.example.app.mtcg.controller.CardPackageController;
 import com.example.app.mtcg.controller.Controller;
 import com.example.app.mtcg.controller.UserController;
 import com.example.server.http.HttpContentType;
@@ -19,6 +20,7 @@ public class MtcgApp implements ServerApplication{
 
     public MtcgApp(){
         controllers.add(new UserController());
+        controllers.add(new CardPackageController());
 
     }
 
@@ -41,7 +43,12 @@ public class MtcgApp implements ServerApplication{
             }
             */
             } catch (Exception e) {
-                // return 500 Internal Server Error
+                Response response = new Response();
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                response.setContentType(HttpContentType.APPLICATION_JSON);
+                response.setBody("Something wrong with Controller"+ e.getLocalizedMessage());
+                return response;
+
             }
         }
 

@@ -2,6 +2,9 @@ package com.example.server.http;
 
 public class Request {
 
+    private String auth;
+
+
     // GET, POST, PUT, DELETE
     private String method;
 
@@ -19,6 +22,13 @@ public class Request {
     // none, "{ "name": "foo" }"
     private String body;
 
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
     public String getMethod() {
         return method;
     }

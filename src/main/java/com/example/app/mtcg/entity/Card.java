@@ -1,27 +1,47 @@
 package com.example.app.mtcg.entity;
 
-import java.util.UUID;
-
 public class Card {
     private String name;
     private String element;
     private String type;
-    private UUID id;
-    private float damage;
+    private String id;
+    private double damage;
 
+    public Card() {
+    }
 
-    public Card(String name, String element, String type, float damage, UUID id) {
+    public Card(String name, String element, String type, double damage, String id) {
         this.name = name;
         this.element = element;
         this.type = type;
         this.damage = damage;
         this.id=id;
     }
-    public UUID getId() {
+    public void setTypeAndElem(){
+        if(this.name.contains("Spell")){
+            this.type="Spell";
+        }
+        else {
+            this.type="Monster";
+        }
+        if(this.name.contains("Water")){
+            this.element="Water";
+        }
+        else if(this.name.contains("Fire")){
+            this.element="Fire";
+        }
+        else{
+            this.element="Normal";
+        }
+    }
+
+    public void setDamage(double damage) {this.damage = damage;}
+
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -49,7 +69,7 @@ public class Card {
         this.element = element;
     }
 
-    public float getDamage() {
+    public double getDamage() {
         return damage;
     }
 

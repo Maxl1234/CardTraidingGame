@@ -12,15 +12,15 @@ CREATE TABLE userAuth(
 
 
 CREATE TABLE cards (
-    card_id UUID PRIMARY KEY,
+    card_id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50),
     element VARCHAR(50),
     type VARCHAR(50),
-    damage FLOAT 
+    damage DOUBLE PRECISION 
 );
 CREATE TABLE users_cards(
     user_id SERIAL REFERENCES users(user_id),
-    card_id UUID REFERENCES cards(card_id),
+    card_id VARCHAR(50) REFERENCES cards(card_id),
     PRIMARY KEY(user_id,card_id)
 );
 CREATE TABLE deck( 
@@ -29,7 +29,7 @@ CREATE TABLE deck(
     );
 CREATE TABLE deck_cards(
     deck_id SERIAL REFERENCES deck(deck_id),
-    card_id UUID REFERENCES cards(card_id),
+    card_id VARCHAR(50) REFERENCES cards(card_id),
     PRIMARY KEY(deck_id,card_id)
 );
 CREATE TABLE packages(
@@ -37,6 +37,6 @@ CREATE TABLE packages(
 );
 CREATE TABLE packages_cards(
     package_id SERIAL REFERENCES packages(package_id),
-    card_id UUID REFERENCES cards(card_id),
+    card_id VARCHAR(50) REFERENCES cards(card_id),
     PRIMARY KEY(package_id,card_id)
 );

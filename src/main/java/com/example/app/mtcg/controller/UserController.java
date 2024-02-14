@@ -30,11 +30,9 @@ public class UserController extends Controller {
                 case "POST": return createUser(request);
                 case "PUT": return updateUser(request);
                 default: return status(HttpStatus.METHOD_NOT_ALLOWED);
-
-
             }
-
         }
+
         else if ( request.getRoute().equals("/sessions")){
             switch (request.getMethod()){
                 case "POST" : return loginUser(request);
