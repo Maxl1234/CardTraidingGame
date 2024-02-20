@@ -41,6 +41,11 @@ public class User {
         this.password = password;
         this.authToken = authToken;
     }
+    public void addPackage(CardPackage pack){
+        for(Card card : pack.getCardPack()){
+            this.userCards.add(card);
+        }
+    }
 
     public int getId() {
         return id;

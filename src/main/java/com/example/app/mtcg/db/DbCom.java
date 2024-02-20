@@ -3,6 +3,7 @@ package com.example.app.mtcg.db;
 import com.example.app.mtcg.entity.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.List;
 import java.util.Vector;
@@ -66,6 +67,119 @@ public class DbCom {
             System.err.println("Fetching User failed"+e.getSQLState());
         }
         return null;
+    }
+    public CardPackage getPackage (){
+        int package_id=0;
+        CardPackage pack = new CardPackage();
+        String getQuerry = "SELECT * FROM package LIMIT 1";
+
+        try {
+            PreparedStatement stmnt = connection.prepareStatement(getQuerry);
+            ResultSet result = stmnt.executeQuery();
+
+            while(result.next()){
+                package_id = result.getInt("package_id");
+            }
+            String name ,type,id,element;
+            double damage;
+            ArrayList<Card> cardsList = new ArrayList<Card>();
+            getQuerry = "SELECT * FROM packages_cards" +
+                    "INNER JOIN cards ON packages_cards.card_id = cards.card_id WHERE package_id = ?";
+
+            stmnt = connection.prepareStatement(getQuerry);
+            result = stmnt.executeQuery();
+
+            while (result.next()){
+                id = result.getString("card_id");
+                name = result.getString("name");
+                element = result.getString("element");
+                type = result.getString("type");
+                damage = result.getDouble("damage");
+                cardsList.add(new Card(name, element, type, damage, id));
+
+            }
+            pack.addCards(cardsList);
+
+            result.close();
+            stmnt.close();
+            return pack;
+        }
+        catch (SQLException e){
+            System.err.println("getPackage failed"+e.getMessage());
+        }
+        return null;
+
+    }
+    public boolean updateUserBuyPack(User user) {           //anders umschreiben weil deck soll doch besten 5 karten haben
+        Boolean succ = false;
+        String updateQuerry = "UPDATE users SET currency = ? WHERE user_id = ?";
+        try {
+            PreparedStatement stmnt = connection.prepareStatement(updateQuerry);
+            stmnt.setInt(1, user.getCurrency());
+            stmnt.setInt(2, user.getId());
+            int row = stmnt.executeUpdate();
+
+            if (row > 0) {
+                String deleteQuerry = "DELETE FROM deck WHERE user_id = ?";
+                stmnt = connection.prepareStatement(deleteQuerry);
+                stmnt.setInt(1, user.getId());
+                stmnt.executeUpdate();
+
+
+
+
+                String inserQuerry = "INSERT INTO deck (user_id) VALUES (?)";
+                stmnt = connection.prepareStatement(inserQuerry);
+                stmnt.setInt(1, user.getId());
+                stmnt.executeUpdate();
+                ResultSet result = stmnt.executeQuery();
+
+                if (result.next()) {
+                    int deckid = result.getInt(1);
+                    for (Card card : user.getUserDeck().getDeck()) {
+                        String id = card.getId();
+                        stmnt = connection.prepareStatement("INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)");
+                        stmnt.setInt(1, deckid);
+                        stmnt.setString(2, id);
+                        stmnt.executeUpdate();
+                    }
+                }
+                Vector<Card> newCards = new Vector<>();
+                Vector<Card> oldCards = getCards(user);
+
+
+                for (Card card : user.getUserCards()) {
+                    for (Card card1  : oldCards) {
+                        if (card.getId().equals(card1.getId())) break;
+                    }
+                    newCards.add(card);
+                }
+
+                if (newCards.isEmpty()) {
+                    stmnt.close();
+                    result.close();
+                    return false;
+                }
+                inserQuerry = "INSERT INTO users_cards (car_did, user_id) VALUES (?, ?)";
+                stmnt = connection.prepareStatement(inserQuerry);
+                for (Card addCard : newCards) {
+                    stmnt.setString(1, addCard.getId());
+                    stmnt.setInt(2, user.getId());
+                    stmnt.executeUpdate();
+                }
+
+                succ = true;
+                result.close();
+            }
+
+            stmnt.close();
+
+
+        } catch (SQLException e) {
+            System.err.println("update user failed" + e.getMessage());
+        }
+
+        return succ;
     }
 
     public User getUserByAuth(String Auth){

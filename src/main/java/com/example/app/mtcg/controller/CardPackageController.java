@@ -52,12 +52,45 @@ public class CardPackageController extends Controller {
         if(!checkAuth(request.getAuth())){
             return status(HttpStatus.UNAUTHORIZED);
         }
+        Response response = new Response();
+        response.setContentType(HttpContentType.TEXT_PLAIN);
         DbCom connection = new DbCom();
         connection.connectdb();
         User user = connection.getUserByAuth(request.getAuth());
+        if (user == null){
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setBody("No User found");
+            return response;
+        }
+        else if(user.getCurrency()<=0){
+            response.setStatus(HttpStatus.OK);
+            response.setBody("User is out of money");
+            return response;
+        }
+
+        CardPackage pack = connection.getPackage();
+        if(pack == null){
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setBody("No Package found");
+            return response;
+        }
+
+        user.addPackage(pack);
+        user.setCurrency(user.getCurrency()-5);
+
+        if(!connection.updateUserBuyPack(user)){
+
+        }
+
+
+
+
+
 
         connection.disconectdb();
         return status(HttpStatus.BAD_REQUEST);
+
+
     }
 
     public boolean checkAdmin(Request request){
