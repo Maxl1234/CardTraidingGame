@@ -21,6 +21,7 @@ public class MtcgApp implements ServerApplication{
     public MtcgApp(){
         controllers.add(new UserController());
         controllers.add(new CardPackageController());
+        controllers.add(new CardController());
 
     }
 
