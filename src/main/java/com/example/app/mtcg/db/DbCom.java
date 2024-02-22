@@ -17,40 +17,39 @@ public class DbCom {
 
     private Connection connection = null;
 
-    public void connectdb(){
+    public void connectdb() {
         try {
 
 
             connection = DriverManager.getConnection(url, user, password);
             System.out.println("Verbindung zur DB hergestellt.");
-        } catch (SQLException  e) {
+        } catch (SQLException e) {
 
             System.err.println("Fehler beim Verbinden zur Datenbank: " + e.getMessage());
         }
     }
 
-    public void disconectdb(){
+    public void disconectdb() {
         try {
             connection.close();
             System.out.println("Verbindung zu DB geschlossen ");
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
 
-            System.err.println("Problem beim DB schließen"+ e.getMessage());
+            System.err.println("Problem beim DB schließen" + e.getMessage());
         }
     }
 
-    public User getUser(String searchedUser)  {
+    public User getUser(String searchedUser) {
         String username = "", password = "";
         int id = -1, currency = -1;
-        try{
+        try {
             PreparedStatement stmnt = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
-            stmnt.setString(1,searchedUser);
+            stmnt.setString(1, searchedUser);
             ResultSet results = stmnt.executeQuery();
 
-            if(results==null) return null;
+            if (results == null) return null;
 
-            while (results.next()){
+            while (results.next()) {
                 username = results.getString("username");
                 password = results.getString("password");
                 id = results.getInt("user_id");
@@ -59,37 +58,39 @@ public class DbCom {
             results.close();
             stmnt.close();
 
-            if(!username.isEmpty() && !password.isEmpty() && currency >= 0){
-                return new User(id,currency,username,password,username+"-mtcgToken");
+            if (!username.isEmpty() && !password.isEmpty() && currency >= 0) {
+                return new User(id, currency, username, password, username + "-mtcgToken");
             }
-        }
-        catch (SQLException e){
-            System.err.println("Fetching User failed"+e.getSQLState());
+        } catch (SQLException e) {
+            System.err.println("Fetching User failed" + e.getSQLState());
         }
         return null;
     }
-    public CardPackage getPackage (){
-        int package_id=0;
+
+    public CardPackage getPackage() {
+        int package_id = 0;
         CardPackage pack = new CardPackage();
-        String getQuerry = "SELECT * FROM package LIMIT 1";
+        String getQuerry = "SELECT * FROM packages LIMIT 1";
 
         try {
             PreparedStatement stmnt = connection.prepareStatement(getQuerry);
             ResultSet result = stmnt.executeQuery();
 
-            while(result.next()){
+            while (result.next()) {
                 package_id = result.getInt("package_id");
             }
-            String name ,type,id,element;
+            String name, type, id, element;
             double damage;
             ArrayList<Card> cardsList = new ArrayList<Card>();
-            getQuerry = "SELECT * FROM packages_cards" +
-                    "INNER JOIN cards ON packages_cards.card_id = cards.card_id WHERE package_id = ?";
+            getQuerry = "SELECT * FROM cards " +
+                    "INNER JOIN packages_cards ON cards.card_id = packages_cards.card_id " +
+                    "WHERE package_id = ?";
 
             stmnt = connection.prepareStatement(getQuerry);
+            stmnt.setInt(1, package_id);
             result = stmnt.executeQuery();
 
-            while (result.next()){
+            while (result.next()) {
                 id = result.getString("card_id");
                 name = result.getString("name");
                 element = result.getString("element");
@@ -99,141 +100,235 @@ public class DbCom {
 
             }
             pack.addCards(cardsList);
+            pack.setId(package_id);
 
             result.close();
             stmnt.close();
             return pack;
-        }
-        catch (SQLException e){
-            System.err.println("getPackage failed"+e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("getPackage failed " + e.getMessage());
         }
         return null;
 
     }
-    public boolean updateUserBuyPack(User user) {           //anders umschreiben weil deck soll doch besten 5 karten haben
-        Boolean succ = false;
-        String updateQuerry = "UPDATE users SET currency = ? WHERE user_id = ?";
+    public boolean deletePackage(CardPackage packToDel){
+        boolean succ = false;
+            String deleteQuerry = "DELETE FROM packages_cards WHERE package_id = ?";
         try {
-            PreparedStatement stmnt = connection.prepareStatement(updateQuerry);
-            stmnt.setInt(1, user.getCurrency());
-            stmnt.setInt(2, user.getId());
+            PreparedStatement stmnt = connection.prepareStatement(deleteQuerry);
+            stmnt.setInt(1,packToDel.getId());
             int row = stmnt.executeUpdate();
-
-            if (row > 0) {
-                String deleteQuerry = "DELETE FROM deck WHERE user_id = ?";
-                stmnt = connection.prepareStatement(deleteQuerry);
-                stmnt.setInt(1, user.getId());
-                stmnt.executeUpdate();
-
-
-
-
-                String inserQuerry = "INSERT INTO deck (user_id) VALUES (?)";
-                stmnt = connection.prepareStatement(inserQuerry);
-                stmnt.setInt(1, user.getId());
-                stmnt.executeUpdate();
-                ResultSet result = stmnt.executeQuery();
-
-                if (result.next()) {
-                    int deckid = result.getInt(1);
-                    for (Card card : user.getUserDeck().getDeck()) {
-                        String id = card.getId();
-                        stmnt = connection.prepareStatement("INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)");
-                        stmnt.setInt(1, deckid);
-                        stmnt.setString(2, id);
-                        stmnt.executeUpdate();
-                    }
-                }
-                Vector<Card> newCards = new Vector<>();
-                Vector<Card> oldCards = getCards(user);
-
-
-                for (Card card : user.getUserCards()) {
-                    for (Card card1  : oldCards) {
-                        if (card.getId().equals(card1.getId())) break;
-                    }
-                    newCards.add(card);
-                }
-
-                if (newCards.isEmpty()) {
-                    stmnt.close();
-                    result.close();
-                    return false;
-                }
-                inserQuerry = "INSERT INTO users_cards (car_did, user_id) VALUES (?, ?)";
-                stmnt = connection.prepareStatement(inserQuerry);
-                for (Card addCard : newCards) {
-                    stmnt.setString(1, addCard.getId());
-                    stmnt.setInt(2, user.getId());
-                    stmnt.executeUpdate();
-                }
-
-                succ = true;
-                result.close();
+            if(row < 1){
+                System.err.println("delete packages_cards failed");
+                return false;
             }
-
+            deleteQuerry = "DELETE FROM packages WHERE package_id = ?";
+            stmnt = connection.prepareStatement(deleteQuerry);
+            stmnt.setInt(1,packToDel.getId());
+            row = stmnt.executeUpdate();
+            if(row < 1){
+                System.err.println("delete packagesfailed");
+                return false;
+            }
+            succ = true;
             stmnt.close();
 
-
-        } catch (SQLException e) {
-            System.err.println("update user failed" + e.getMessage());
         }
-
+        catch (SQLException e){
+            System.err.println("delete package fail"+e.getMessage());
+        }
         return succ;
     }
 
-    public User getUserByAuth(String Auth){
-        String username="",password="";
-        int currency=0,id=0;
-        String AuthCor = Auth.replace("Bearer","");
+    public boolean updateUserBuyPack(User user) {
+        boolean success = false;
+        String updateQuery = "UPDATE users SET currency = ? WHERE user_id = ?";
+
+        try {
+            // Update currency
+            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+            updateStatement.setInt(1, user.getCurrency());
+            updateStatement.setInt(2, user.getId());
+            int rowsUpdated = updateStatement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                // Karten in DB hinzufügen
+                Vector<Card> cardToAddCards = new Vector<>();
+                Vector<Card> dbCards = getCards(user);
+
+                for (Card card : user.getUserCards()) {
+                    boolean found = false;
+                    for (Card card1 : dbCards) {
+                        if (card.getId().equals(card1.getId())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        cardToAddCards.add(card);
+                    }
+                }
+
+                if (!cardToAddCards.isEmpty()) {
+                    String insertQuery = "INSERT INTO users_cards (card_id, user_id) VALUES (?, ?)";
+                    PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+
+                    for (Card addCard : cardToAddCards) {
+                        insertStatement.setString(1, addCard.getId());
+                        insertStatement.setInt(2, user.getId());
+                        insertStatement.executeUpdate();
+                    }
+
+                    // Abrufen der generierten deck_id
+                    String selectQuery = "SELECT deck_id FROM deck WHERE user_id = ?";
+                    PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+                    selectStatement.setInt(1, user.getId());
+                    ResultSet generatedKeys = selectStatement.executeQuery();
+
+                    if (generatedKeys.next()) {
+                        int deckId = generatedKeys.getInt(1);
+
+                        // Lösche alte Karten aus deck_cards
+                        String deleteDeckCardsQuery = "DELETE FROM deck_cards WHERE deck_id = ?";
+                        PreparedStatement deleteDeckCardsStatement = connection.prepareStatement(deleteDeckCardsQuery);
+                        deleteDeckCardsStatement.setInt(1, deckId);
+                        deleteDeckCardsStatement.executeUpdate();
+
+                        // Füge neue Karten in deck_cards ein
+                        for (Card card : user.getUserDeck().getDeck()) {
+                            String cardId = card.getId();
+                            String insertDeckCardsQuery = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
+                            PreparedStatement insertDeckCardsStatement = connection.prepareStatement(insertDeckCardsQuery);
+                            insertDeckCardsStatement.setInt(1, deckId);
+                            insertDeckCardsStatement.setString(2, cardId);
+                            insertDeckCardsStatement.executeUpdate();
+                        }
+
+                        success = true;
+                    } else {
+                        System.err.println("Error: Keine generierte deck_id gefunden.");
+                    }
+
+                    generatedKeys.close();
+                    selectStatement.close();
+                    insertStatement.close();
+                }
+            }
+
+            updateStatement.close();
+        } catch (SQLException e) {
+            System.err.println("Update user failed: " + e.getMessage());
+        }
+
+        return success;
+    }
+
+
+
+    public User getUserByAuth(String AuthCor) {
+        String username = "", password = "";
+        int currency = 0, id = 0;
+
         String getQuerry = "SELECT * FROM users " +
-                "JOIN userAuth ON user_id = user_id" +
-                "WHERE token = ?";
+                "JOIN userAuth ON users.user_id = userAuth.user_id " +
+                "WHERE userAuth.token = ?";
         try {
             PreparedStatement stmnt = connection.prepareStatement(getQuerry);
-            stmnt.setString(1,AuthCor);
+            stmnt.setString(1, AuthCor);
             ResultSet result = stmnt.executeQuery();
 
-            while (result.next()){
+            while (result.next()) {
                 username = result.getString("username");
                 password = result.getString("password");
                 currency = result.getInt("currency");
                 id = result.getInt("user_id");
             }
-            User user = new User(id,currency,username,password, AuthCor);
+            User user = new User(id, currency, username, password, AuthCor);
             stmnt.close();
             result.close();
 
             user.setUserCards(getCards(user));
+            user.setUserDeck(getDeck(user));
             // selbe noch mit Deck
 
-            if(!username.isEmpty() && !password.isEmpty() && currency >= 0){
+            if (!username.isEmpty() && !password.isEmpty() && currency >= 0) {
                 return user;
             }
 
-        }
-        catch (SQLException e){
-            System.err.println("getUser failed"+e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("getUser failed" + e.getMessage());
         }
         return null;
     }
 
+    public Deck getDeck(User user){
+        Deck deck = new Deck();
+        String selectQuerry = "SELECT deck_id FROM deck WHERE user_id = ?";
+        try {
+            PreparedStatement stmnt = connection.prepareStatement(selectQuerry);
+            stmnt.setInt(1,user.getId());
+            ResultSet result = stmnt.executeQuery();
+            if(result.next()) {
+                int deckId = result.getInt("deck_id");
+                selectQuerry = "SELECT * FROM deck_cards WHERE deck_id = ?";
+                stmnt = connection.prepareStatement(selectQuerry);
+                stmnt.setInt(1, deckId);
+                result = stmnt.executeQuery();
+                Vector<String> cardIdVec = new Vector<>();
+
+                while (result.next()) {
+                    cardIdVec.add(result.getString("card_id"));
+                }
+                if (cardIdVec.isEmpty()) {
+                    System.out.println("User has no deck yet");
+                    return deck;
+                }
+                selectQuerry = "SELECT * FROM cards WHERE card_id = ?";
+                Vector<Card> cardsToAdd = new Vector<>();
+                for (String cardId : cardIdVec) {
+                    stmnt = connection.prepareStatement(selectQuerry);
+                    stmnt.setString(1, cardId);
+                    result = stmnt.executeQuery();
+
+                    if (result.next()) {
+                        String name = result.getString("name");
+                        String element = result.getString("element");
+                        String type = result.getString("type");
+                        double damage = result.getDouble("damage");
+                        cardsToAdd.add(new Card(name, element, type, damage, cardId));
+                    }
+
+                }
+                if (cardsToAdd.isEmpty()) {
+                    System.err.println("Card add to Deck failed");
+                    return deck;
+                }
+                deck.setDeck(cardsToAdd);
+                stmnt.close();
+                result.close();
+            }
+        }
+        catch (SQLException e){
+            System.err.println("fetch deck failed "+e.getMessage());
+        }
+    return deck;
+    }
 
 
-    public Vector<Card> getCards (User user){
+    public Vector<Card> getCards(User user) {
         Vector<Card> userCards = new Vector<Card>();
-        String name,element,type,id;
+        String name, element, type, id;
         double damage;
         String getQuerry = "SELECT * FROM cards " +
-                "JOIN users_cards ON card_id = card_id" +
-                "WHERE user_id = ?";
-        try{
+                "JOIN users_cards ON cards.card_id = users_cards.card_id " +
+                "WHERE users_cards.user_id = ?";
+        try {
             PreparedStatement stmnt = connection.prepareStatement(getQuerry);
-            stmnt.setInt(1,user.getId());
+            stmnt.setInt(1, user.getId());
 
             ResultSet result = stmnt.executeQuery();
 
-            while (result.next()){
+            while (result.next()) {
                 id = result.getString("card_id");
                 name = result.getString("name");
                 element = result.getString("element");
@@ -246,25 +341,24 @@ public class DbCom {
             result.close();
             stmnt.close();
 
-        }
-        catch (SQLException e){
-            System.err.println("getCards failed"+e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("getCards failed" + e.getMessage());
         }
         return userCards;
     }
 
-    public boolean insertToken (User user){
+    public boolean insertToken(User user) {
         boolean auth = false;
 
         try {
             int id = user.getId();
             String token = user.getAuthToken();
             PreparedStatement stmnt = connection.prepareStatement("INSERT INTO userAuth (token,user_id) VALUES (?,?)");
-            stmnt.setString(1,token);
-            stmnt.setInt(2,id);
+            stmnt.setString(1, token);
+            stmnt.setInt(2, id);
 
             int row = stmnt.executeUpdate();
-            if (row>0){
+            if (row > 0) {
                 auth = true;
             }
             connection.close();
@@ -276,26 +370,25 @@ public class DbCom {
         return auth;
 
     }
-    public boolean checkAuth(String Auth){
+
+    public boolean checkAuth(String AuthCor) {
         boolean suc = false;
         String getQuerry = "SELECT * FROM userAuth WHERE token = ?";
-        String AuthCor = Auth.replace("Bearer","");
         try {
             PreparedStatement stmnt = connection.prepareStatement(getQuerry);
-            stmnt.setString(1,AuthCor);
+            stmnt.setString(1, AuthCor.trim());
             ResultSet result = stmnt.executeQuery();
             suc = result.isBeforeFirst();
             stmnt.close();
 
-        }
-        catch (SQLException e){
-            System.err.println("checkAuth failes "+e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("checkAuth failes " + e.getMessage());
         }
 
         return suc;
     }
 
-    public boolean insertCard(Card card){
+    public boolean insertCard(Card card) {
         String id = card.getId();
         String name = card.getName();
         String element = card.getElement();
@@ -303,36 +396,35 @@ public class DbCom {
         double damage = card.getDamage();
 
         String insertQuery = "INSERT INTO cards (card_id,name,element,type,damage) VALUES (?,?,?,?,?)";
-        try{
+        try {
             PreparedStatement stmnt = connection.prepareStatement(insertQuery);
-            stmnt.setObject(1,id);
-            stmnt.setString(2,name);
-            stmnt.setString(3,element);
-            stmnt.setString(4,type);
-            stmnt.setDouble(5,damage);
+            stmnt.setObject(1, id);
+            stmnt.setString(2, name);
+            stmnt.setString(3, element);
+            stmnt.setString(4, type);
+            stmnt.setDouble(5, damage);
 
             int rowsAf = stmnt.executeUpdate();
-            if(rowsAf>0){
+            if (rowsAf > 0) {
                 System.out.println("Card insert success");
                 return true;
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e) {
             System.err.println("Card insert Error" + e.getSQLState());
         }
         return false;
 
     }
 
-    public boolean insertPackage(List<Card> cardsToInsert){
+    public boolean insertPackage(List<Card> cardsToInsert) {
 
-        for (Card card : cardsToInsert){
+        for (Card card : cardsToInsert) {
             boolean cardSucc = insertCard(card);
             if (!cardSucc) return false;
         }
         String insertQuerry = "INSERT INTO packages DEFAULT VALUES RETURNING package_id";
 
-        int id=0;
+        int id = 0;
 
         try {
             PreparedStatement stmnt = connection.prepareStatement(insertQuerry);
@@ -346,24 +438,22 @@ public class DbCom {
             }
 
 
-        }
-        catch (SQLException e){
-            System.err.println("Package insert failed"+e.getSQLState());
+        } catch (SQLException e) {
+            System.err.println("Package insert failed" + e.getSQLState());
             return false;
         }
         String relationQuery = "INSERT INTO packages_cards (package_id, card_id) VALUES (?, ?)";
         // Irgendwas will es hier gar nicht
 
         try (PreparedStatement stmnt = connection.prepareStatement(relationQuery)) {
-            for(Card card:cardsToInsert) {
+            for (Card card : cardsToInsert) {
                 stmnt.setInt(1, id);
                 stmnt.setObject(2, card.getId());
                 stmnt.executeUpdate();
             }
 
-        }
-        catch (SQLException e){
-            System.err.println("Pack Card Rel FAIL"+e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Pack Card Rel FAIL" + e.getMessage());
             return false;
         }
 
@@ -374,7 +464,8 @@ public class DbCom {
         String un = user.getUsername();
         String pw = user.getPassword();
         String selectQuery = "SELECT COUNT(*) FROM users WHERE username = ?";
-        String insertQuery = "INSERT INTO users (username, password) VALUES (?, ?)";
+        String insertUserQuery = "INSERT INTO users (username, password, currency) VALUES (?, ?, ?)";
+        String insertDeckQuery = "INSERT INTO deck (user_id) VALUES (?)";
 
         try {
             // Überprüfe, ob der Benutzername bereits existiert
@@ -390,15 +481,40 @@ public class DbCom {
                 return false; // Abbrechen, da der Benutzername bereits existiert
             }
 
-            // Führe die INSERT-Abfrage aus, da der Benutzername nicht existiert
-            PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
-            insertStatement.setString(1, un);
-            insertStatement.setString(2, pw);
+            // Führe die INSERT-Abfrage für den Benutzer aus
+            PreparedStatement insertUserStatement = connection.prepareStatement(insertUserQuery, Statement.RETURN_GENERATED_KEYS);
+            insertUserStatement.setString(1, un);
+            insertUserStatement.setString(2, pw);
+            insertUserStatement.setInt(3, 20);
 
-            int rowsAffected = insertStatement.executeUpdate();
+            int affectedRowsUser = insertUserStatement.executeUpdate();
 
-            if (rowsAffected > 0) {
+            if (affectedRowsUser > 0) {
                 System.out.println("Benutzer erfolgreich in die Datenbank eingefügt.");
+
+                // Abrufen der generierten user_id
+                ResultSet generatedKeys = insertUserStatement.getGeneratedKeys();
+                int userId;
+
+                if (generatedKeys.next()) {
+                    userId = generatedKeys.getInt(1);
+
+                    // Führe die INSERT-Abfrage für das Deck aus
+                    PreparedStatement insertDeckStatement = connection.prepareStatement(insertDeckQuery);
+                    insertDeckStatement.setInt(1, userId);
+
+                    int affectedRowsDeck = insertDeckStatement.executeUpdate();
+
+                    if (affectedRowsDeck > 0) {
+                        System.out.println("Deck erfolgreich in die Datenbank eingefügt.");
+                    } else {
+                        System.err.println("Deck konnte nicht in die Datenbank eingefügt werden.");
+                        return false;
+                    }
+                } else {
+                    System.err.println("Benutzer konnte nicht in die Datenbank eingefügt werden (keine generierte user_id).");
+                    return false;
+                }
             } else {
                 System.out.println("Benutzer konnte nicht in die Datenbank eingefügt werden.");
                 return false;
@@ -406,15 +522,14 @@ public class DbCom {
 
             // Wichtig: Schließe die Prepared Statements, um Ressourcen freizugeben
             selectStatement.close();
-            insertStatement.close();
+            insertUserStatement.close();
         } catch (SQLException e) {
             System.err.println("User insert gescheitert. Fehlerdetails:");
-            System.err.println("SQL-Statuscode: " + e.getSQLState());
+            System.err.println("SQL-Statuscode: " + e.getMessage());
             return false;
         }
         return true;
     }
-
-
 }
+
 

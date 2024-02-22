@@ -27,7 +27,8 @@ public class Request {
     }
 
     public void setAuth(String auth) {
-        this.auth = auth;
+
+        this.auth = auth.replace("Bearer","").trim();
     }
     public String getMethod() {
         return method;

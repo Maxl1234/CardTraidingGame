@@ -32,6 +32,9 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.authToken = username + "-mtcgToken";
+        this.userDeck = new Deck();
+        this.currency=20;
     }
 
     public User(int id, int currency, String username, String password, String authToken) {
@@ -40,7 +43,15 @@ public class User {
         this.username = username;
         this.password = password;
         this.authToken = authToken;
+        this.userDeck = new Deck();
     }
+
+    public void updateDeck(){
+        if(this.userDeck==null || this.userDeck.getDeck().isEmpty()){
+            userDeck.setRndDeck(userCards);
+        }
+    }
+
     public void addPackage(CardPackage pack){
         for(Card card : pack.getCardPack()){
             this.userCards.add(card);

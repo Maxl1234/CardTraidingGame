@@ -27,7 +27,7 @@ public class CardPackageController extends Controller {
                 default: return status(HttpStatus.METHOD_NOT_ALLOWED);
             }
         }
-        else if(request.getRoute().equals("/transactions")){
+        else if(request.getRoute().startsWith("/transactions")){
             switch (request.getMethod()){
                 case "POST": return buyPackage(request);
                 default:return status(HttpStatus.METHOD_NOT_ALLOWED);
@@ -69,28 +69,26 @@ public class CardPackageController extends Controller {
         }
 
         CardPackage pack = connection.getPackage();
-        if(pack == null){
+        if(pack.getCardPack().isEmpty()){
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
             response.setBody("No Package found");
             return response;
         }
 
         user.addPackage(pack);
+        user.updateDeck();
         user.setCurrency(user.getCurrency()-5);
 
         if(!connection.updateUserBuyPack(user)){
-
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setBody("User Update failed");
+            return response;
         }
-
-
-
-
-
-
+        connection.deletePackage(pack);
         connection.disconectdb();
-        return status(HttpStatus.BAD_REQUEST);
-
-
+        response.setStatus(HttpStatus.OK);
+        response.setBody("Package successfully bought");
+        return response;
     }
 
     public boolean checkAdmin(Request request){
