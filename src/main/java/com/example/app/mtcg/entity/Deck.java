@@ -3,6 +3,7 @@ package com.example.app.mtcg.entity;
 import java.util.Vector;
 
 public class Deck {
+    private int id;
     private Vector<Card> deck ;
 
     public void setRndDeck(Vector<Card> cards){
@@ -26,5 +27,12 @@ public class Deck {
         this.deck = deck;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
 }

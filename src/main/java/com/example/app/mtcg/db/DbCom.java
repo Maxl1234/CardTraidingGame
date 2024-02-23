@@ -39,6 +39,36 @@ public class DbCom {
         }
     }
 
+    public boolean replaceDeck(Vector<String> cardIds,int deckid){
+        String deleteQuerry = "DELETE FROM deck_cards WHERE deck_id = ?";
+        try {
+            PreparedStatement stmnt = connection.prepareStatement(deleteQuerry);
+            stmnt.setInt(1,deckid);
+            int row = stmnt.executeUpdate();
+            if(row<1){
+                System.err.println("delete deck error");
+                return false;
+            }
+            String insertQuerry = "INSERT INTO deck_cards (deck_id,card_id) VALUES (?,?)";
+            for(String cardId : cardIds){
+                stmnt = connection.prepareStatement(insertQuerry);
+                stmnt.setInt(1,deckid);
+                stmnt.setString(2,cardId);
+                row = stmnt.executeUpdate();
+                if(row<1){
+                    System.err.println("insert deck_cards error");
+                    return false;
+                }
+            }
+            stmnt.close();
+
+        }
+        catch (SQLException e){
+            System.err.println("replace Deck error "+e.getMessage());
+        }
+        return true;
+    }
+
     public User getUser(String searchedUser) {
         String username = "", password = "";
         int id = -1, currency = -1;
@@ -270,6 +300,7 @@ public class DbCom {
             ResultSet result = stmnt.executeQuery();
             if(result.next()) {
                 int deckId = result.getInt("deck_id");
+                deck.setId(deckId);
                 selectQuerry = "SELECT * FROM deck_cards WHERE deck_id = ?";
                 stmnt = connection.prepareStatement(selectQuerry);
                 stmnt.setInt(1, deckId);

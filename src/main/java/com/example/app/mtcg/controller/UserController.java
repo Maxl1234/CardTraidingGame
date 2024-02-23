@@ -41,7 +41,7 @@ public class UserController extends Controller {
         }
         Response response = new Response();
         response.setStatus(HttpStatus.BAD_REQUEST);
-        response.setContentType(HttpContentType.TEXT_PLAIN);
+        response.setContentType(HttpContentType.APPLICATION_JSON);
         response.setBody("Route: "+request.getRoute()+" Methond: "+request.getMethod()+" Body: "+request.getBody());
         return response;
         //return status(HttpStatus.BAD_REQUEST);
@@ -51,7 +51,7 @@ public class UserController extends Controller {
 
         Response response = new Response();
         response.setStatus(HttpStatus.OK);
-        response.setContentType(HttpContentType.TEXT_PLAIN);
+        response.setContentType(HttpContentType.APPLICATION_JSON);
         response.setBody("lists users ()");
         return response;
 

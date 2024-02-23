@@ -1,10 +1,7 @@
 package com.example.app.mtcg;
 
 
-import com.example.app.mtcg.controller.CardController;
-import com.example.app.mtcg.controller.CardPackageController;
-import com.example.app.mtcg.controller.Controller;
-import com.example.app.mtcg.controller.UserController;
+import com.example.app.mtcg.controller.*;
 import com.example.server.http.HttpContentType;
 import com.example.server.http.HttpStatus;
 import com.example.server.http.Response;
@@ -22,6 +19,7 @@ public class MtcgApp implements ServerApplication{
         controllers.add(new UserController());
         controllers.add(new CardPackageController());
         controllers.add(new CardController());
+        controllers.add(new DeckController());
 
     }
 

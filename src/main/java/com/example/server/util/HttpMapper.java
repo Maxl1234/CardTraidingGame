@@ -19,6 +19,8 @@ public class HttpMapper {
         request.setHost(getHttpHeader("Host", httpRequest));
         if(getHttpHeader("Authorization",httpRequest)!= null)
             request.setAuth(getHttpHeader("Authorization",httpRequest));
+        else
+            request.setAuth("");
 
         // THOUGHT: don't do the content parsing in this method
         String contentLengthHeader = getHttpHeader("Content-Length", httpRequest);

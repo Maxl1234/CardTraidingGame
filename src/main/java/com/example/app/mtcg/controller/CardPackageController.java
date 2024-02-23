@@ -36,24 +36,18 @@ public class CardPackageController extends Controller {
 
         Response response = new Response();
         response.setStatus(HttpStatus.BAD_REQUEST);
-        response.setContentType(HttpContentType.TEXT_PLAIN);
+        response.setContentType(HttpContentType.APPLICATION_JSON);
         response.setBody("Route: "+request.getRoute()+"\n Methond: "+request.getMethod()+"\n Body: "+request.getBody()
                 +"\n Head: "+request.getHost()+"\n Head2: " + request.toString()+"\n Head3: "+request.getAuth());
         return response;
     }
-    public boolean checkAuth(String Auth){
-        DbCom connection = new DbCom();
-        connection.connectdb();
-        boolean succ = connection.checkAuth(Auth);
-        connection.disconectdb();
-        return succ;
-    }
+
     public Response buyPackage(Request request){
         if(!checkAuth(request.getAuth())){
             return status(HttpStatus.UNAUTHORIZED);
         }
         Response response = new Response();
-        response.setContentType(HttpContentType.TEXT_PLAIN);
+        response.setContentType(HttpContentType.APPLICATION_JSON);
         DbCom connection = new DbCom();
         connection.connectdb();
         User user = connection.getUserByAuth(request.getAuth());
@@ -103,7 +97,7 @@ public class CardPackageController extends Controller {
         List<Card> cardsPack = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         Response response = new Response();
-        response.setContentType(HttpContentType.TEXT_PLAIN);
+        response.setContentType(HttpContentType.APPLICATION_JSON);
 
 
         try{

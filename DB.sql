@@ -1,5 +1,5 @@
 CREATE TABLE users (
-  user_id SERIAL PRIMARY KEY,
+     SERIAL PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
   password VARCHAR(50) NOT NULL,
     currency INT
@@ -40,3 +40,11 @@ CREATE TABLE packages_cards(
     card_id VARCHAR(50) REFERENCES cards(card_id),
     PRIMARY KEY(package_id,card_id)
 );
+DELETE FROM userAuth;
+DELETE FROM users_cards;
+DELETE FROM deck_cards;
+DELETE FROM deck;
+DELETE FROM packages_cards;
+DELETE FROM packages;
+DELETE FROM cards;
+Delete from users;
