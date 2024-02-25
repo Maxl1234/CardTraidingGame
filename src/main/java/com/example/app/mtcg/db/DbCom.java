@@ -39,6 +39,42 @@ public class DbCom {
         }
     }
 
+    public Vector<User> getAllUsers() {
+        Vector<User> users = new Vector<>();
+
+        try (
+                // Verbindung zur Datenbank herstellen
+                Connection connection = DriverManager.getConnection(url, user, password);
+                // SQL-Statement für die Abfrage vorbereiten
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM users");
+                // Ergebnis der Abfrage abrufen
+                ResultSet resultSet = statement.executeQuery()
+        ) {
+            // Benutzer aus dem ResultSet erstellen und zum Vektor hinzufügen
+            while (resultSet.next()) {
+                User user = new User(
+                        resultSet.getInt("user_id"),
+                        resultSet.getInt("currency"),
+                        resultSet.getString("username"),
+                        resultSet.getString("password"),
+                        resultSet.getString("username")+"-mtcgToken",
+                        resultSet.getString("bio"),
+                        resultSet.getString("image"),
+                        resultSet.getString("name"),
+                        resultSet.getInt("score"),
+                        resultSet.getInt("wins"),
+                        resultSet.getInt("losses"),
+                        resultSet.getInt("draws")
+                );
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
+
     public boolean replaceDeck(Vector<String> cardIds,int deckid){
         String deleteQuerry = "DELETE FROM deck_cards WHERE deck_id = ?";
         try {
@@ -169,6 +205,26 @@ public class DbCom {
         }
         return succ;
     }
+    public boolean updateUserBattle(User user){
+        String upddateQuerry = "Update users SET wins = ?,losses = ?,draws = ? WHERE user_id = ?";
+        try{
+            PreparedStatement stmnt = connection.prepareStatement(upddateQuerry);
+            stmnt.setInt(1,user.getWins());
+            stmnt.setInt(2,user.getLosses());
+            stmnt.setInt(3,user.getDraws());
+            stmnt.setInt(4,user.getId());
+            int row = stmnt.executeUpdate();
+            if(row<1){
+                System.err.println("update after battle failed");
+                return false;
+            }
+        }
+        catch (SQLException e){
+            System.err.println("error updatae"+e.getMessage());
+            return false;
+        }
+        return true;
+    }
 
     public boolean updateUserBuyPack(User user) {
         boolean success = false;
@@ -256,8 +312,8 @@ public class DbCom {
 
 
     public User getUserByAuth(String AuthCor) {
-        String username = "", password = "";
-        int currency = 0, id = 0;
+        String username = "", password = "",name = "",bio = "", image = "";
+        int currency = 0, id = 0, score = 100,wins=0,losses=0,draws=0;
 
         String getQuerry = "SELECT * FROM users " +
                 "JOIN userAuth ON users.user_id = userAuth.user_id " +
@@ -272,8 +328,16 @@ public class DbCom {
                 password = result.getString("password");
                 currency = result.getInt("currency");
                 id = result.getInt("user_id");
+                name = result.getString("name");
+                bio = result.getString("bio");
+                image = result.getString("image");
+                score = result.getInt("score");
+                wins = result.getInt("wins");
+                losses=result.getInt("losses");
+                draws=result.getInt("draws");
+
             }
-            User user = new User(id, currency, username, password, AuthCor);
+            User user = new User(id, currency, username, password, AuthCor,bio,image,name,score, wins, losses, draws);
             stmnt.close();
             result.close();
 
@@ -400,6 +464,28 @@ public class DbCom {
         }
         return auth;
 
+    }
+
+    public boolean updateUser(String name,String bio,String image,String username){
+        boolean suc = false;
+        String updateQuerry = "UPDATE users SET name = ?, image = ?, bio = ? WHERE username = ?";
+        try {
+            PreparedStatement stmnt = connection.prepareStatement(updateQuerry);
+            stmnt.setString(1,name);
+            stmnt.setString(2,image);
+            stmnt.setString(3,bio);
+            stmnt.setString(4,username);
+            int row = stmnt.executeUpdate();
+            if(row >0){
+                suc = true;
+            }
+            stmnt.close();
+
+        }
+        catch (SQLException e){
+            System.err.println("Update User error "+e.getMessage());
+        }
+        return suc;
     }
 
     public boolean checkAuth(String AuthCor) {

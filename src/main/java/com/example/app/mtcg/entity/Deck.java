@@ -1,5 +1,6 @@
 package com.example.app.mtcg.entity;
 
+import java.util.Random;
 import java.util.Vector;
 
 public class Deck {
@@ -19,6 +20,12 @@ public class Deck {
         deck=new Vector<>();
     }
 
+    public Card getRndCard(){
+        Random rand = new Random();
+        int randInt = rand.nextInt(this.deck.size());
+        return deck.elementAt(randInt);
+    }
+
     public Vector<Card> getDeck() {
         return deck;
     }
@@ -33,6 +40,17 @@ public class Deck {
 
     public void setId(int id) {
         this.id = id;
+    }
+    public void addCard(Card card){
+        this.deck.add(card);
+    }
+    public void deleteCard(Card cardToRm){
+
+        for(int i = 0;i<this.deck.size();i++){
+            if(this.deck.elementAt(i).getId().equals(cardToRm.getId())){
+                this.deck.remove(i);
+            }
+        }
     }
 
 }

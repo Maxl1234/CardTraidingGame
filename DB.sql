@@ -1,13 +1,25 @@
 CREATE TABLE users (
-     SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(50) NOT NULL,
-    currency INT
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(50) NOT NULL,
+    currency INT,
+    bio VARCHAR("255"),
+    image VARCHAR("255"),
+    name VARCHAR("255"),
+    score INT,
+    wins INT,
+    losses INT,
+    draws INT
 );
 CREATE TABLE userAuth(
     token_id SERIAL PRIMARY KEY,
     token VARCHAR(50),
     user_id INT REFERENCES users(user_id)
+);
+CREATE TABLE scoreboard(
+    user_id SERIAL REFERENCES users(user_id),
+    score INT,
+    PRIMARY KEY (user_id,score)
 );
 
 
@@ -40,6 +52,11 @@ CREATE TABLE packages_cards(
     card_id VARCHAR(50) REFERENCES cards(card_id),
     PRIMARY KEY(package_id,card_id)
 );
+CREATE TABLE scoreboard(
+    user_id SERIAL,
+    score INT,
+    PRIMARY KEY(user_id,score)
+)
 DELETE FROM userAuth;
 DELETE FROM users_cards;
 DELETE FROM deck_cards;
@@ -47,4 +64,5 @@ DELETE FROM deck;
 DELETE FROM packages_cards;
 DELETE FROM packages;
 DELETE FROM cards;
+DELETE FROM scoreboard;
 Delete from users;

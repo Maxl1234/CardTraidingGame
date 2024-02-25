@@ -8,7 +8,9 @@ public enum HttpStatus {
     METHOD_NOT_ALLOWED(405, "Method not allowed"),
     CREATED(201,"Created"),
     INTERNAL_SERVER_ERROR(500,"Internal Server error"),
-    UNAUTHORIZED(401,"Unauthorized");
+    UNAUTHORIZED(401,"Unauthorized"),
+    ACCEPTED(202,"Accepted");
+
 
     private final int code;
     private final String message;
