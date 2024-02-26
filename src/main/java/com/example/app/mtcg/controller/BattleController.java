@@ -65,6 +65,11 @@ public class BattleController extends Controller{
             // Führe den Kampf durch
             Battle battle = new Battle(userA, userB);
             String battleLog = battle.startBattle();
+            if(!connection.updateUserBattle(userA) || !connection.updateUserBattle(userB)){
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                response.setBody("update failure");
+                return response;
+            }
 
             // Erstelle die Antwort mit dem Kampfprotokoll
 

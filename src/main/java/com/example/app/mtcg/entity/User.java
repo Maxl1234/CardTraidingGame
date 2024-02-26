@@ -20,7 +20,7 @@ public class User {
     private String bio = "";
     private String image = "";
     private Deck userDeck;
-    private Vector<Card> userCards;
+    private Vector<Card> userCards = new Vector<>();
 
     public User() {
 
@@ -73,6 +73,7 @@ public class User {
         this.password = password;
         this.authToken = username + "-mtcgToken";
         this.userDeck = new Deck();
+
 
     }
 

@@ -12,7 +12,7 @@ public class Scoreboard {
     }
     public void sortUserScoresByScore() {
         // Comparator erstellen, um Benutzer nach Punkten zu sortieren
-        Comparator<User> scoreComparator = Comparator.comparingInt(User::getScore);
+        Comparator<User> scoreComparator = Comparator.comparingInt(User::getScore).reversed();
 
         // Sortieren Sie den Vektor userScores mit dem erstellten Comparator
         Collections.sort(userScores, scoreComparator);
@@ -23,19 +23,21 @@ public class Scoreboard {
         if (userScores.isEmpty()){
             userScores.add(userToAdd);
         }
-        int y = 0;
-        boolean added = false;
-        for(int i=0;i<=userScores.size();i++){
-            if(userScores.elementAt(i-y).getScore() > userToAdd.getScore() || added){
-                newScoreboard.add(userScores.elementAt(i));
+        else {
+            int y = 0;
+            boolean added = false;
+            for (int i = 0; i <= userScores.size(); i++) {
+                if (userScores.elementAt(i - y).getScore() > userToAdd.getScore() || added) {
+                    newScoreboard.add(userScores.elementAt(i - y));
+                } else {
+                    newScoreboard.add(userToAdd);
+                    added = true;
+                    y = 1;
+                }
             }
-            else{
-                newScoreboard.add(userToAdd);
-                added = true;
-                y=1;
-            }
+
+            userScores=newScoreboard;
         }
-        userScores=newScoreboard;
     }
 
     public String showScores (){

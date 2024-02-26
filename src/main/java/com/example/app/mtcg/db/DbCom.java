@@ -218,7 +218,7 @@ public class DbCom {
                 System.err.println("update after battle failed");
                 return false;
             }
-        }
+        }  ///Karten und deck noch updaten
         catch (SQLException e){
             System.err.println("error updatae"+e.getMessage());
             return false;

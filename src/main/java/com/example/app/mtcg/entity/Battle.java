@@ -14,6 +14,9 @@ public class Battle {
     }
 
     public String startBattle(){
+        if(userA == null || userB == null){
+            return "One user missing";
+        }
         Deck deckA = this.userA.getUserDeck();
         Deck deckB = this.userB.getUserDeck();
 
@@ -102,7 +105,7 @@ public class Battle {
             maxGames--;
         }
         if (winner==this.userA) {
-            this.log += "\nThe winner of the Battle is Player A";
+            this.log += "\nThe winner of the Battle is Player A\n";
             this.userA.addCards(userB.getUserDeck().getDeck());
             this.userB.deleteCards(userB.getUserDeck().getDeck());
             this.userB.setUserDeck(new Deck());
@@ -110,7 +113,7 @@ public class Battle {
             userB.setLosses(userB.getLosses()+1);
         }
         else if(winner==this.userB){
-            this.log+= "\nThe winner of the Battle is PlayerB";
+            this.log+= "\nThe winner of the Battle is PlayerB\n";
             this.userB.addCards((this.userA.getUserDeck().getDeck()));
             this.userA.deleteCards(userA.getUserDeck().getDeck());
             this.userA.setUserDeck(new Deck());
@@ -118,7 +121,7 @@ public class Battle {
             userA.setLosses(userA.getLosses()+1);
             }
         else{
-            this.log+="\n Todays fight was a draw";
+            this.log+="\n Todays fight was a draw\n";
             userA.setDraws(userA.getDraws()+1);
             userB.setDraws(userB.getDraws()+1);
         }
