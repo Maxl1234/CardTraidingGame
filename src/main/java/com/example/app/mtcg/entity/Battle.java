@@ -150,7 +150,8 @@ public class Battle {
                 (me.getName().contains("Ork") && op.getName().contains("Wizard")) ||
                 (me.getName().contains("Knight") && (op.getElement().equals("Water") && op.getType().equals("Spell"))) ||
                 (me.getType().equals("Spell") && op.getName().contains("Kraken")) ||
-                (me.getName().contains("Dragon") && op.getName().contains("FireElf"))
+                (me.getName().contains("Dragon") && op.getName().contains("FireElf")) ||
+                op.getType().contains("God")
 
         ) {
             return 2;
@@ -160,7 +161,8 @@ public class Battle {
                 (op.getName().contains("Ork") && me.getName().contains("Wizard")) ||
                 (op.getName().contains("Knight") && (me.getElement().equals("Water") && me.getType().equals("Spell"))) ||
                 (op.getType().equals("Spell") && me.getName().contains("Kraken")) ||
-                (op.getName().contains("Dragon") && me.getName().contains("FireElf"))
+                (op.getName().contains("Dragon") && me.getName().contains("FireElf")) ||
+                me.getType().contains("God")
 
         ) {
             return 1;

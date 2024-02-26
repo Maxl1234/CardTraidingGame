@@ -21,6 +21,9 @@ public class Card {
         if(this.name.contains("Spell")){
             this.type="Spell";
         }
+        else if(this.name.contains("God")){
+            this.type="God";
+        }
         else {
             this.type="Monster";
         }

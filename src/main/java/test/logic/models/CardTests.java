@@ -20,6 +20,8 @@ public class CardTests {
         card.setName("Golem");
         card.setTypeAndElem();
         assertEquals("Normal", card.getElement());
+
+
     }
 
 
@@ -34,5 +36,9 @@ public class CardTests {
         card.setName("Knight");
         card.setTypeAndElem();
         assertEquals("Monster", card.getType());
+
+        card.setName("God");
+        card.setTypeAndElem();
+        assertEquals("God", card.getType());
     }
 }

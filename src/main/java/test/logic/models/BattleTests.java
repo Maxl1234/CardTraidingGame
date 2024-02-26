@@ -162,4 +162,32 @@ public class BattleTests {
 
         assertTrue(result.contains("Player B won"));
     }
+
+    @Test
+    public void testStartBattle_PlayerBWinsWithGods() {
+        User playerA = new User("PlayerA", "passwordA");
+        User playerB = new User("PlayerB", "passwordB");
+
+        Deck deckA = new Deck();
+        deckA.addCard(new Card("CardA1", "Water", "Monster", 30, "IdA1"));
+        deckA.addCard(new Card("CardA2", "Fire", "Monster", 20, "IdA2"));
+        deckA.addCard(new Card("CardA3", "Normal", "Monster", 40, "IdA3"));
+        deckA.addCard(new Card("CardA4", "Water", "Monster", 50, "IdA4"));
+
+        Deck deckB = new Deck();
+        deckB.addCard(new Card("God", "Fire", "Monster", 1, "IdB1"));
+        deckB.addCard(new Card("God", "Normal", "Monster", 1, "IdB2"));
+        deckB.addCard(new Card("God", "Water", "Monster", 1, "IdB3"));
+        deckB.addCard(new Card("God", "Fire", "Monster", 1, "IdB4"));
+
+        playerA.setUserDeck(deckA);
+        playerB.setUserDeck(deckB);
+
+        Battle battle = new Battle(playerA, playerB);
+        String result = battle.startBattle();
+
+        assertTrue(result.contains("Player B won"));
+    }
+
+
 }
